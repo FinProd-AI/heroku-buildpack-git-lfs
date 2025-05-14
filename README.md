@@ -5,7 +5,7 @@ This is a Heroku buildpack which installs Git LFS and downloads your Git LFS dat
 ## Usage
 
 ```
-heroku buildpacks:add --index 1 https://github.com/finprodai/heroku-buildpack-git-lfs
+heroku buildpacks:add --index 1 https://github.com/FinProd-AI/heroku-buildpack-git-lfs
 ```
 
 Set the following environment variable for your app:
