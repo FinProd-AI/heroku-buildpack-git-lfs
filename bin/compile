@@ -23,7 +23,16 @@ if [ ! -d "$PACKAGE_DIR" ]; then
 
   mkdir "$PACKAGE_DIR"
   tar --extract --file "$CACHE_DIR/$PACKAGE_FILENAME" --directory "$PACKAGE_DIR"
-  cp "$PACKAGE_DIR"/git-lfs-$GIT_LFS_VERSION/git-lfs "$BUILD_DIR/.heroku/git-lfs/bin"
+  echo "Contents of $PACKAGE_DIR after extraction:"
+  ls -lR "$PACKAGE_DIR"
+  if [ -f "$PACKAGE_DIR/git-lfs-$GIT_LFS_VERSION/git-lfs" ]; then
+    echo "Found git-lfs binary, copying..."
+    cp "$PACKAGE_DIR/git-lfs-$GIT_LFS_VERSION/git-lfs" "$BUILD_DIR/.heroku/git-lfs/bin"
+  else
+    echo "git-lfs binary not found at expected path!"
+    # Try to find it anywhere in the extracted directory
+    find "$PACKAGE_DIR" -name git-lfs -type f
+  fi
   rm "$CACHE_DIR/$PACKAGE_FILENAME"
 fi
 
