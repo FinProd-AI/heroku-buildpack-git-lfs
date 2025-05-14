@@ -49,13 +49,19 @@ if [ -f "$BUILD_DIR/.gitattributes" ]; then
 
       mkdir -p "$HOME"/.ssh
 
-      echo "$GIT_LFS_SSH_KEY" > "$HOME"/.ssh/identity_file
+      echo "$GIT_LFS_SSH_KEY" | tr -d '\r' > "$HOME"/.ssh/identity_file
+      chmod 600 "$HOME"/.ssh/identity_file
       cat > "$HOME"/.ssh/config <<EOF
 Host $GIT_HOST
   IdentityFile "$HOME/.ssh/identity_file"
   StrictHostKeyChecking=no
 EOF
     fi
+    
+    echo "PATH: $PATH"
+    ls -l "$BUILD_DIR/.heroku/git-lfs/bin"
+    which git-lfs || echo "git-lfs not found in PATH"
+    "$BUILD_DIR/.heroku/git-lfs/bin/git-lfs" version || echo "git-lfs binary not working"
 
     git -C "$BUILD_DIR" init | indent
     git -C "$BUILD_DIR" remote add origin "$GIT_LFS_REPOSITORY" | indent
