@@ -55,9 +55,24 @@ tar --extract --file "$CACHE_DIR/$PACKAGE_FILENAME" --directory "$PACKAGE_DIR"
 echo "DEBUG: tar exit code: $?"
 echo "DEBUG: Contents of $PACKAGE_DIR after extraction:"
 ls -lR "$PACKAGE_DIR"
-cp "$PACKAGE_DIR"/git-lfs-$GIT_LFS_VERSION/git-lfs "$BUILD_DIR/.heroku/git-lfs/bin" 2>/dev/null && \
-  echo "DEBUG: Copied git-lfs binary to $BUILD_DIR/.heroku/git-lfs/bin" || \
-  echo "DEBUG: Failed to copy git-lfs binary from $PACKAGE_DIR/git-lfs-$GIT_LFS_VERSION/git-lfs"
+
+EXPECTED_LFS_BIN="$PACKAGE_DIR/git-lfs-$GIT_LFS_VERSION/git-lfs"
+if [ -f "$EXPECTED_LFS_BIN" ]; then
+  cp "$EXPECTED_LFS_BIN" "$BUILD_DIR/.heroku/git-lfs/bin"
+  echo "DEBUG: Copied git-lfs binary to $BUILD_DIR/.heroku/git-lfs/bin"
+else
+  echo "DEBUG: Failed to copy git-lfs binary from $EXPECTED_LFS_BIN"
+  echo "DEBUG: Attempting to locate git-lfs binary with find..."
+  FOUND_LFS_BIN=$(find "$PACKAGE_DIR" -type f -name git-lfs | head -n 1)
+  if [ -n "$FOUND_LFS_BIN" ]; then
+    cp "$FOUND_LFS_BIN" "$BUILD_DIR/.heroku/git-lfs/bin"
+    echo "DEBUG: Copied git-lfs binary from $FOUND_LFS_BIN to $BUILD_DIR/.heroku/git-lfs/bin"
+  else
+    echo "ERROR: git-lfs binary not found in $PACKAGE_DIR"
+    exit 1
+  fi
+fi
+
 rm "$CACHE_DIR/$PACKAGE_FILENAME"
 echo "DEBUG: Removed $CACHE_DIR/$PACKAGE_FILENAME"
 
