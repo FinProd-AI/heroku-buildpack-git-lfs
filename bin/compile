@@ -4,46 +4,70 @@ indent() {
   sed -u "s/^/       /"
 }
 
+echo "DEBUG: Script started"
+
 BUILD_DIR=$1
 CACHE_DIR=$2
 ENV_DIR=$3
 APP_DIR=/app
+
+echo "DEBUG: BUILD_DIR=$BUILD_DIR"
+echo "DEBUG: CACHE_DIR=$CACHE_DIR"
+echo "DEBUG: ENV_DIR=$ENV_DIR"
+echo "DEBUG: APP_DIR=$APP_DIR"
 
 GIT_LFS_VERSION=v3.6.1
 DOWNLOAD_URL="https://github.com/git-lfs/git-lfs/releases/download/$GIT_LFS_VERSION/git-lfs-linux-amd64-$GIT_LFS_VERSION.tar.gz"
 PACKAGE_FILENAME=${DOWNLOAD_URL##*/}
 PACKAGE_DIR="$CACHE_DIR/${PACKAGE_FILENAME%.tar.gz}"
 
+echo "DEBUG: GIT_LFS_VERSION=$GIT_LFS_VERSION"
+echo "DEBUG: DOWNLOAD_URL=$DOWNLOAD_URL"
+echo "DEBUG: PACKAGE_FILENAME=$PACKAGE_FILENAME"
+echo "DEBUG: PACKAGE_DIR=$PACKAGE_DIR"
+
 echo "-----> Installing git-lfs-linux-amd64-$GIT_LFS_VERSION"
 
 if [ ! -d "$PACKAGE_DIR" ]; then
+  echo "DEBUG: $PACKAGE_DIR does not exist, proceeding with download and extraction"
   if [ ! -f "$CACHE_DIR/$PACKAGE_FILENAME" ]; then
+    echo "DEBUG: $CACHE_DIR/$PACKAGE_FILENAME does not exist, downloading..."
     curl --silent --show-error --location --output "$CACHE_DIR/$PACKAGE_FILENAME" $DOWNLOAD_URL
+    echo "DEBUG: curl exit code: $?"
+    ls -l "$CACHE_DIR/$PACKAGE_FILENAME"
+  else
+    echo "DEBUG: $CACHE_DIR/$PACKAGE_FILENAME already exists, skipping download"
   fi
 
   mkdir "$PACKAGE_DIR"
+  echo "DEBUG: Created $PACKAGE_DIR"
   tar --extract --file "$CACHE_DIR/$PACKAGE_FILENAME" --directory "$PACKAGE_DIR"
-  echo "Contents of $PACKAGE_DIR after extraction:"
+  echo "DEBUG: tar exit code: $?"
+  echo "DEBUG: Contents of $PACKAGE_DIR after extraction:"
   ls -lR "$PACKAGE_DIR"
-  if [ -f "$PACKAGE_DIR/git-lfs-$GIT_LFS_VERSION/git-lfs" ]; then
-    echo "Found git-lfs binary, copying..."
-    cp "$PACKAGE_DIR/git-lfs-$GIT_LFS_VERSION/git-lfs" "$BUILD_DIR/.heroku/git-lfs/bin"
-  else
-    echo "git-lfs binary not found at expected path!"
-    # Try to find it anywhere in the extracted directory
-    find "$PACKAGE_DIR" -name git-lfs -type f
-  fi
+  cp "$PACKAGE_DIR"/git-lfs-$GIT_LFS_VERSION/git-lfs "$BUILD_DIR/.heroku/git-lfs/bin" 2>/dev/null && \
+    echo "DEBUG: Copied git-lfs binary to $BUILD_DIR/.heroku/git-lfs/bin" || \
+    echo "DEBUG: Failed to copy git-lfs binary from $PACKAGE_DIR/git-lfs-$GIT_LFS_VERSION/git-lfs"
   rm "$CACHE_DIR/$PACKAGE_FILENAME"
+  echo "DEBUG: Removed $CACHE_DIR/$PACKAGE_FILENAME"
+else
+  echo "DEBUG: $PACKAGE_DIR already exists, skipping download and extraction"
 fi
+
+mkdir -p "$BUILD_DIR"/.heroku/git-lfs/bin
+echo "DEBUG: Ensured $BUILD_DIR/.heroku/git-lfs/bin exists"
 
 mkdir -p "$BUILD_DIR"/.profile.d
 cat > "$BUILD_DIR"/.profile.d/000_git_lfs.sh <<EOF
 export PATH="\$HOME/.heroku/git-lfs/bin:\$PATH"
 EOF
+echo "DEBUG: Created .profile.d/000_git_lfs.sh"
 
 export PATH="$BUILD_DIR/.heroku/git-lfs/bin${PATH:+:}${PATH:-}"
+echo "DEBUG: PATH set to $PATH"
 
 if [ -f "$BUILD_DIR/.gitattributes" ]; then
+  echo "DEBUG: $BUILD_DIR/.gitattributes exists"
   GIT_LFS_REPOSITORY=`cat "$ENV_DIR/GIT_LFS_REPOSITORY"`
   echo "DEBUG: GIT_LFS_REPOSITORY: $GIT_LFS_REPOSITORY"
   GIT_LFS_SSH_KEY=`cat "$ENV_DIR/GIT_LFS_SSH_KEY"`
@@ -57,16 +81,19 @@ if [ -f "$BUILD_DIR/.gitattributes" ]; then
       GIT_HOST="${GIT_HOST%:*}"
 
       mkdir -p "$HOME"/.ssh
+      echo "DEBUG: Created $HOME/.ssh"
 
       echo "$GIT_LFS_SSH_KEY" | tr -d '\r' > "$HOME"/.ssh/identity_file
       chmod 600 "$HOME"/.ssh/identity_file
+      echo "DEBUG: Wrote SSH key to $HOME/.ssh/identity_file and set permissions"
       cat > "$HOME"/.ssh/config <<EOF
 Host $GIT_HOST
   IdentityFile "$HOME/.ssh/identity_file"
   StrictHostKeyChecking=no
 EOF
+      echo "DEBUG: Wrote SSH config for $GIT_HOST"
     fi
-    
+
     echo "PATH: $PATH"
     ls -l "$BUILD_DIR/.heroku/git-lfs/bin"
     which git-lfs || echo "git-lfs not found in PATH"
@@ -84,5 +111,8 @@ EOF
     fi
 
     rm -rf "$BUILD_DIR"/.git "$HOME"/.ssh/config "$HOME"/.ssh/identity_file
+    echo "DEBUG: Cleaned up .git and SSH files"
   fi
+else
+  echo "DEBUG: $BUILD_DIR/.gitattributes does not exist, skipping LFS steps"
 fi
