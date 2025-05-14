@@ -22,12 +22,12 @@ if [ ! -d "$PACKAGE_DIR" ]; then
   fi
 
   mkdir "$PACKAGE_DIR"
-  tar --extract --file "$CACHE_DIR/$PACKAGE_FILENAME" --directory "$PACKAGE_DIR" git-lfs
+  tar --extract --file "$CACHE_DIR/$PACKAGE_FILENAME" --directory "$PACKAGE_DIR" "git-lfs-$GIT_LFS_VERSION/git-lfs"
   rm "$CACHE_DIR/$PACKAGE_FILENAME"
 fi
 
 mkdir -p "$BUILD_DIR"/.heroku/git-lfs/bin
-cp "$PACKAGE_DIR"/git-lfs "$BUILD_DIR"/.heroku/git-lfs/bin
+cp "$PACKAGE_DIR/git-lfs-$GIT_LFS_VERSION/git-lfs" "$BUILD_DIR"/.heroku/git-lfs/bin
 
 mkdir -p "$BUILD_DIR"/.profile.d
 cat > "$BUILD_DIR"/.profile.d/000_git_lfs.sh <<EOF
