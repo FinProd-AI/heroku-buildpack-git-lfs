@@ -28,31 +28,27 @@ echo "DEBUG: PACKAGE_DIR=$PACKAGE_DIR"
 
 echo "-----> Installing git-lfs-linux-amd64-$GIT_LFS_VERSION"
 
-if [ ! -d "$PACKAGE_DIR" ]; then
-  echo "DEBUG: $PACKAGE_DIR does not exist, proceeding with download and extraction"
-  if [ ! -f "$CACHE_DIR/$PACKAGE_FILENAME" ]; then
-    echo "DEBUG: $CACHE_DIR/$PACKAGE_FILENAME does not exist, downloading..."
-    curl --silent --show-error --location --output "$CACHE_DIR/$PACKAGE_FILENAME" $DOWNLOAD_URL
-    echo "DEBUG: curl exit code: $?"
-    ls -l "$CACHE_DIR/$PACKAGE_FILENAME"
-  else
-    echo "DEBUG: $CACHE_DIR/$PACKAGE_FILENAME already exists, skipping download"
-  fi
+# Always download and extract the package, overwriting any existing files/directories
+echo "DEBUG: Forcing download and extraction of git-lfs package"
+rm -rf "$PACKAGE_DIR"
+echo "DEBUG: Removed $PACKAGE_DIR if it existed"
 
-  mkdir "$PACKAGE_DIR"
-  echo "DEBUG: Created $PACKAGE_DIR"
-  tar --extract --file "$CACHE_DIR/$PACKAGE_FILENAME" --directory "$PACKAGE_DIR"
-  echo "DEBUG: tar exit code: $?"
-  echo "DEBUG: Contents of $PACKAGE_DIR after extraction:"
-  ls -lR "$PACKAGE_DIR"
-  cp "$PACKAGE_DIR"/git-lfs-$GIT_LFS_VERSION/git-lfs "$BUILD_DIR/.heroku/git-lfs/bin" 2>/dev/null && \
-    echo "DEBUG: Copied git-lfs binary to $BUILD_DIR/.heroku/git-lfs/bin" || \
-    echo "DEBUG: Failed to copy git-lfs binary from $PACKAGE_DIR/git-lfs-$GIT_LFS_VERSION/git-lfs"
-  rm "$CACHE_DIR/$PACKAGE_FILENAME"
-  echo "DEBUG: Removed $CACHE_DIR/$PACKAGE_FILENAME"
-else
-  echo "DEBUG: $PACKAGE_DIR already exists, skipping download and extraction"
-fi
+echo "DEBUG: Downloading $DOWNLOAD_URL to $CACHE_DIR/$PACKAGE_FILENAME"
+curl --silent --show-error --location --output "$CACHE_DIR/$PACKAGE_FILENAME" $DOWNLOAD_URL
+echo "DEBUG: curl exit code: $?"
+ls -l "$CACHE_DIR/$PACKAGE_FILENAME"
+
+mkdir "$PACKAGE_DIR"
+echo "DEBUG: Created $PACKAGE_DIR"
+tar --extract --file "$CACHE_DIR/$PACKAGE_FILENAME" --directory "$PACKAGE_DIR"
+echo "DEBUG: tar exit code: $?"
+echo "DEBUG: Contents of $PACKAGE_DIR after extraction:"
+ls -lR "$PACKAGE_DIR"
+cp "$PACKAGE_DIR"/git-lfs-$GIT_LFS_VERSION/git-lfs "$BUILD_DIR/.heroku/git-lfs/bin" 2>/dev/null && \
+  echo "DEBUG: Copied git-lfs binary to $BUILD_DIR/.heroku/git-lfs/bin" || \
+  echo "DEBUG: Failed to copy git-lfs binary from $PACKAGE_DIR/git-lfs-$GIT_LFS_VERSION/git-lfs"
+rm "$CACHE_DIR/$PACKAGE_FILENAME"
+echo "DEBUG: Removed $CACHE_DIR/$PACKAGE_FILENAME"
 
 mkdir -p "$BUILD_DIR"/.heroku/git-lfs/bin
 echo "DEBUG: Ensured $BUILD_DIR/.heroku/git-lfs/bin exists"
