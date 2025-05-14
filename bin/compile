@@ -16,6 +16,15 @@ echo "DEBUG: CACHE_DIR=$CACHE_DIR"
 echo "DEBUG: ENV_DIR=$ENV_DIR"
 echo "DEBUG: APP_DIR=$APP_DIR"
 
+# Check if directories exist
+for dir in "$BUILD_DIR" "$CACHE_DIR" "$ENV_DIR" "$APP_DIR"; do
+  if [ -d "$dir" ]; then
+    echo "DEBUG: Directory exists: $dir"
+  else
+    echo "ERROR: Directory does NOT exist: $dir"
+  fi
+done
+
 GIT_LFS_VERSION=3.6.1
 GIT_LFS_VERSION_V="v$GIT_LFS_VERSION"
 DOWNLOAD_URL="https://github.com/git-lfs/git-lfs/releases/download/$GIT_LFS_VERSION_V/git-lfs-linux-amd64-$GIT_LFS_VERSION_V.tar.gz"
