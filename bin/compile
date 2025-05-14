@@ -56,6 +56,9 @@ echo "DEBUG: tar exit code: $?"
 echo "DEBUG: Contents of $PACKAGE_DIR after extraction:"
 ls -lR "$PACKAGE_DIR"
 
+mkdir -p "$BUILD_DIR/.heroku/git-lfs/bin"
+echo "DEBUG: Ensured $BUILD_DIR/.heroku/git-lfs/bin exists"
+
 EXPECTED_LFS_BIN="$PACKAGE_DIR/git-lfs-$GIT_LFS_VERSION/git-lfs"
 if [ -f "$EXPECTED_LFS_BIN" ]; then
   cp "$EXPECTED_LFS_BIN" "$BUILD_DIR/.heroku/git-lfs/bin"
@@ -75,9 +78,6 @@ fi
 
 rm "$CACHE_DIR/$PACKAGE_FILENAME"
 echo "DEBUG: Removed $CACHE_DIR/$PACKAGE_FILENAME"
-
-mkdir -p "$BUILD_DIR"/.heroku/git-lfs/bin
-echo "DEBUG: Ensured $BUILD_DIR/.heroku/git-lfs/bin exists"
 
 mkdir -p "$BUILD_DIR"/.profile.d
 cat > "$BUILD_DIR"/.profile.d/000_git_lfs.sh <<EOF
