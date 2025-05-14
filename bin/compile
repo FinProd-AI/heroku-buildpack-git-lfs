@@ -9,7 +9,7 @@ CACHE_DIR=$2
 ENV_DIR=$3
 APP_DIR=/app
 
-GIT_LFS_VERSION=v2.10.0
+GIT_LFS_VERSION=v3.6.1
 DOWNLOAD_URL="https://github.com/git-lfs/git-lfs/releases/download/$GIT_LFS_VERSION/git-lfs-linux-amd64-$GIT_LFS_VERSION.tar.gz"
 PACKAGE_FILENAME=${DOWNLOAD_URL##*/}
 PACKAGE_DIR="$CACHE_DIR/${PACKAGE_FILENAME%.tar.gz}"
@@ -38,7 +38,9 @@ export PATH="$BUILD_DIR/.heroku/git-lfs/bin${PATH:+:}${PATH:-}"
 
 if [ -f "$BUILD_DIR/.gitattributes" ]; then
   GIT_LFS_REPOSITORY=`cat "$ENV_DIR/GIT_LFS_REPOSITORY"`
+  echo "DEBUG: GIT_LFS_REPOSITORY: $GIT_LFS_REPOSITORY"
   GIT_LFS_SSH_KEY=`cat "$ENV_DIR/GIT_LFS_SSH_KEY"`
+  echo "DEBUG: GIT_LFS_SSH_KEY: $GIT_LFS_SSH_KEY"
 
   if [ -n "$GIT_LFS_REPOSITORY" ]; then
     echo "Downloading git-lfs data" | indent
