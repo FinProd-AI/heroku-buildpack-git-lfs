@@ -125,8 +125,13 @@ EOF
     git -C "$BUILD_DIR" remote add origin "$GIT_LFS_REPOSITORY" | indent
     git -C "$BUILD_DIR" fetch origin | indent
     git -C "$BUILD_DIR" reset --mixed "$SOURCE_VERSION" | indent
+
     git -C "$BUILD_DIR" lfs install | indent
-    git -C "$BUILD_DIR" lfs pull origin | indent
+    git -C "$BUILD_DIR" lfs fetch --all | indent
+    git -C "$BUILD_DIR" lfs checkout | indent
+
+    echo "DEBUG: Listing LFS-tracked files in $BUILD_DIR"
+    git -C "$BUILD_DIR" lfs ls-files
 
     if [ $? -ne 0 ]; then
       git -C "$BUILD_DIR" lfs logs last | indent
