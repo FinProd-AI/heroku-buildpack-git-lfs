@@ -19,9 +19,9 @@ heroku buildpacks:add --index 1 https://github.com/FinProd-AI/heroku-buildpack-g
   The clone URL of the repository from which to download Git LFS data.  
   This should include any username, password, or personal access token necessary to clone noninteractively.  
   - For SSH:  
-    `git@github.com:<username>/<repository>.git`
+    `git@github.com:<username>/<repository>`
   - For HTTPS with token:  
-    `https://<token>@github.com/<username>/<repository>.git`  
+    `https://<token>@github.com/<username>/<repository>`  
   See [this Stack Overflow answer](https://stackoverflow.com/a/50193010/3538165) for details on the syntax.
 
 - **`GIT_LFS_SSH_KEY`**  
